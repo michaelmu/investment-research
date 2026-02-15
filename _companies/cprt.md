@@ -1,4 +1,5 @@
 ---
+title: Copart (CPRT)
 ticker: CPRT
 name: Copart
 category: compounder
@@ -6,10 +7,6 @@ updated: 2026-02-15
 ---
 
 ## Copart (CPRT)
-
-
-
----
 
 ### Deep dive (10-K grounded)
 *Kind:* deep-dive  \ 
@@ -41,10 +38,5 @@ Copart compounds via a two-sided marketplace (seller volume ↔ buyer liquidity/
 As of 2026‑02‑13 close: ~$37.49; ~42% below the 10y high and below the 200‑day SMA (trend context only; not adjusted for splits/dividends).
 
 **Watchlist:** ADD — CPRT. Marketplace + insurer integration; monitor seller concentration and export/import regulation risk.
-
-**Not financial advice.**
-
-**Not financial advice.**
-Placeholder page. We’ll paste the most recent deep dive here and keep updating.
 
 **Not financial advice.**

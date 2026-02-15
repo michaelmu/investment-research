@@ -71,20 +71,21 @@ def ensure_company_page(path: Path, ticker: str, name: str, category: str) -> No
     if path.exists():
         return
     path.parent.mkdir(parents=True, exist_ok=True)
+    title = f"{name} ({ticker})"
     path.write_text(
         "---\n"
+        f"title: {title}\n"
         f"ticker: {ticker}\n"
         f"name: {name}\n"
         f"category: {category}\n"
         f"updated: {date.today().isoformat()}\n"
         "---\n\n"
-        f"## {name} ({ticker})\n\n"
-        "**Not financial advice.**\n",
+        f"## {title}\n",
         encoding="utf-8",
     )
 
 
-def update_frontmatter(md: str, updated: str, category: Optional[str] = None, name: Optional[str] = None) -> str:
+def update_frontmatter(md: str, updated: str, category: Optional[str] = None, name: Optional[str] = None, title: Optional[str] = None) -> str:
     # Extremely small YAML edit: update 'updated:' line and optionally name/category if provided.
     if not md.startswith("---\n"):
         return md
@@ -98,6 +99,8 @@ def update_frontmatter(md: str, updated: str, category: Optional[str] = None, na
         if ln.startswith("updated:"):
             out.append(f"updated: {updated}")
             seen_updated = True
+        elif title and ln.startswith("title:"):
+            out.append(f"title: {title}")
         elif name and ln.startswith("name:"):
             out.append(f"name: {name}")
         elif category and ln.startswith("category:"):
@@ -152,7 +155,7 @@ def main() -> None:
     ensure_company_page(company_path, ticker=ticker, name=name, category=category or "")
 
     md = company_path.read_text(encoding="utf-8")
-    md = update_frontmatter(md, updated=updated, category=category or None, name=name)
+    md = update_frontmatter(md, updated=updated, category=category or None, name=name, title=f"{name} ({ticker})")
     md = insert_after_h2(md, block)
     company_path.write_text(md, encoding="utf-8")
 
