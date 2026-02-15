@@ -1,19 +1,12 @@
 ---
+layout: post
+title: Deep dive (10-K grounded)
 ticker: CPRT
-name: Copart
-category: compounder
-updated: 2026-02-15
+kind: deep-dive
+published_at: 2026-02-15T20:36:01.609577Z
 ---
 
 ## Copart (CPRT)
-
-
-
----
-
-### Deep dive (10-K grounded)
-*Kind:* deep-dive  \ 
-*Updated:* 2026-02-15
 
 ## Copart (CPRT) — deep dive (10‑K grounded)
 
@@ -43,8 +36,5 @@ As of 2026‑02‑13 close: ~$37.49; ~42% below the 10y high and below the 200�
 **Watchlist:** ADD — CPRT. Marketplace + insurer integration; monitor seller concentration and export/import regulation risk.
 
 **Not financial advice.**
-
-**Not financial advice.**
-Placeholder page. We’ll paste the most recent deep dive here and keep updating.
 
 **Not financial advice.**
