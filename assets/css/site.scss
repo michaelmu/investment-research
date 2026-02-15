@@ -1,0 +1,95 @@
+---
+---
+
+/* Minimal, readable theme overrides for Minima */
+
+:root {
+  --bg: #0b0f17;
+  --panel: #0f1624;
+  --text: #e6e9ef;
+  --muted: #a9b1bd;
+  --link: #7aa2f7;
+  --link-visited: #bb9af7;
+  --border: rgba(255,255,255,0.10);
+  --code: #c0caf5;
+  --accent: #2ac3de;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #ffffff;
+    --panel: #f7f8fa;
+    --text: #111827;
+    --muted: #4b5563;
+    --link: #1d4ed8;
+    --link-visited: #6d28d9;
+    --border: rgba(17,24,39,0.12);
+    --code: #111827;
+    --accent: #0891b2;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.site-header, .site-footer {
+  border-color: var(--border);
+}
+
+.site-title, .site-title:visited {
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.site-nav .page-link {
+  color: var(--muted);
+}
+.site-nav .page-link:hover {
+  color: var(--text);
+}
+
+a { color: var(--link); }
+a:visited { color: var(--link-visited); }
+
+.wrapper {
+  max-width: 860px;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.small {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.80rem;
+  color: var(--muted);
+  margin-right: 6px;
+}
+
+code, pre {
+  color: var(--code);
+}
+
+pre {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}

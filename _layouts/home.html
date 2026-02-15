@@ -1,0 +1,35 @@
+---
+layout: default
+---
+
+<div class="card">
+  <h2 style="margin-top:0">What this is</h2>
+  <p class="small">
+    Ongoing research notes on US public equities (compounders + AI beneficiaries).<br />
+    <strong>Not financial advice.</strong>
+  </p>
+</div>
+
+<h2>Watchlist</h2>
+<p><a href="{{ '/watchlist/' | relative_url }}">View combined watchlist →</a></p>
+
+<h2>Latest research posts</h2>
+{% assign posts = site.posts | slice: 0, 12 %}
+{% if posts.size > 0 %}
+  <ul>
+  {% for p in posts %}
+    <li>
+      <a href="{{ p.url | relative_url }}">{{ p.title }}</a>
+      <span class="small">({{ p.date | date: "%Y-%m-%d" }}{% if p.ticker %} · {{ p.ticker }}{% endif %})</span>
+    </li>
+  {% endfor %}
+  </ul>
+{% else %}
+  <p class="small">No posts yet.</p>
+{% endif %}
+
+<hr />
+
+<p class="small">
+  Tip: browse by company: <a href="{{ '/companies/' | relative_url }}">Companies index</a>.
+</p>

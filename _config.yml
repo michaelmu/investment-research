@@ -5,6 +5,11 @@ baseurl: ""
 
 theme: minima
 
+# custom styling
+sass:
+  sass_dir: assets/css
+  style: compressed
+
 collections:
   companies:
     output: true
