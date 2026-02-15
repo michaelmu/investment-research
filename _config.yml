@@ -1,0 +1,25 @@
+title: "Investment Research"
+description: "Research notes and watchlists (not financial advice)."
+url: ""
+baseurl: ""
+
+theme: minima
+
+collections:
+  companies:
+    output: true
+    permalink: /companies/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: "companies"
+    values:
+      layout: page
+
+plugins:
+  - jekyll-feed
+
+exclude:
+  - README.md
+  - vendor

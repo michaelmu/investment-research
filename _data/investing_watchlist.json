@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "addedAt": "2026-02-15",
+      "name": "Eaton",
+      "note": "KEEP (Mr. Mike confirmed). AI/datacenter + electrification tailwinds; has some China exposure (equity-method stakes) to quantify.",
+      "tags": [
+        "ai-beneficiary",
+        "compounder",
+        "watchlist-keep"
+      ],
+      "ticker": "ETN",
+      "updatedAt": "2026-02-15"
+    },
+    {
+      "addedAt": "2026-02-15",
+      "name": "Copart",
+      "note": "ADD. Marketplace salvage auctions; 10-K shows insurance sellers ~81% of vehicles processed (FY25). No explicit China mention in 10-K text scan; still monitor export/import law risks.",
+      "tags": [
+        "ai?",
+        "compounder",
+        "marketplace",
+        "watchlist-add"
+      ],
+      "ticker": "CPRT",
+      "updatedAt": "2026-02-15"
+    }
+  ],
+  "maxSize": 30,
+  "style": "compounders",
+  "universe": "US public equities",
+  "updatedAt": "2026-02-15",
+  "version": 1
+}
