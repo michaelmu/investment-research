@@ -1,7 +1,7 @@
 title: "Investment Research"
 description: "Research notes and watchlists (not financial advice)."
-url: ""
-baseurl: ""
+url: "https://michaelmu.github.io"
+baseurl: "/investment-research"
 
 theme: minima
 
