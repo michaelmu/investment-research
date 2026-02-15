@@ -26,6 +26,8 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+import subprocess
+
 
 def slugify(s: str) -> str:
     s = s.strip().lower()
@@ -131,6 +133,9 @@ def main() -> None:
     ap.add_argument("--stdin", action="store_true")
     ap.add_argument("--also-post", action="store_true")
     ap.add_argument("--post-tag", default="research", help="slug fragment for post filename")
+    ap.add_argument("--commit", action="store_true", help="git add + commit the generated files")
+    ap.add_argument("--commit-message", default=None, help="commit message (default auto)")
+    ap.add_argument("--push", action="store_true", help="git push after commit")
 
     args = ap.parse_args()
     ticker = args.ticker.upper().strip()
@@ -151,7 +156,7 @@ def main() -> None:
     md = insert_after_h2(md, block)
     company_path.write_text(md, encoding="utf-8")
 
-    post_path = None
+    post_path: Optional[Path] = None
     if args.also_post:
         posts = Path("_posts")
         posts.mkdir(parents=True, exist_ok=True)
@@ -172,15 +177,44 @@ def main() -> None:
             encoding="utf-8",
         )
 
-    print(
-        "\n".join(
-            [
-                "ok: true",
-                f"company_page: {company_path}",
-                *( [f"post: {post_path}"] if post_path else [] ),
-            ]
-        )
-    )
+    # Optional git ops
+    commit_sha = None
+    pushed = False
+    if args.commit or args.push:
+        # Stage generated files
+        paths = [str(company_path)]
+        if post_path:
+            paths.append(str(post_path))
+        subprocess.run(["git", "add", "--"] + paths, check=True)
+
+        msg = args.commit_message or f"Publish {ticker} {args.kind}: {args.title}"
+        # Commit may fail if no changes; treat that as non-fatal.
+        c = subprocess.run(["git", "commit", "-m", msg], capture_output=True, text=True)
+        if c.returncode == 0:
+            # Read HEAD sha
+            commit_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+        else:
+            stderr = (c.stderr or "") + (c.stdout or "")
+            if "nothing to commit" not in stderr.lower():
+                raise SystemExit(stderr.strip())
+
+        if args.push:
+            p = subprocess.run(["git", "push"], capture_output=True, text=True)
+            if p.returncode != 0:
+                # Don't crash the whole publish; surface actionable error.
+                eprint("WARN: git push failed. Configure auth (SSH deploy key or PAT).")
+                eprint((p.stderr or p.stdout or "").strip())
+            else:
+                pushed = True
+
+    lines = [
+        "ok: true",
+        f"company_page: {company_path}",
+        *( [f"post: {post_path}"] if post_path else [] ),
+        *( [f"commit: {commit_sha}"] if commit_sha else [] ),
+        f"pushed: {str(pushed).lower()}",
+    ]
+    print("\n".join(lines))
 
 
 if __name__ == "__main__":
