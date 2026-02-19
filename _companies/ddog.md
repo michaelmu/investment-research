@@ -13,11 +13,11 @@ updated: 2026-02-19
 
 ---
 
-### Land-and-expand observability compounder
+###### Land-and-expand observability compounder
 *Kind:* deep-dive  \ 
 *Updated:* 2026-02-19
 
-# Datadog (DDOG) — “Land-and-expand” observability compounder
+#### Datadog (DDOG) — “Land-and-expand” observability compounder
 
 **Thesis (high-growth compounder lens):** Datadog sells a unified, usage-oriented SaaS platform that sits on the critical path of modern software operations (monitoring/observability + security). The product footprint can start small (one team, one use-case) and then naturally expands across logs/metrics/traces, more workloads, and adjacent modules (security, service management). That creates a credible *compounding* mechanism: rising customer usage + cross-sell, supported by a large and still-growing IT operations market.
 
@@ -38,11 +38,11 @@ updated: 2026-02-19
 **Not financial advice.**
 ---
 
-### Datadog: observability + security platform compounding
+###### Datadog: observability + security platform compounding
 *Kind:* deep-dive  \ 
 *Updated:* 2026-02-18
 
-# Datadog (DDOG) — Observability platform with land-and-expand economics
+#### Datadog (DDOG) — Observability platform with land-and-expand economics
 
 **Thesis (why it can compound):** Datadog sits on the critical path of modern software delivery: it collects and correlates telemetry (metrics, traces, logs, user sessions, security signals) across increasingly complex cloud/hybrid stacks. When a platform becomes the “single pane of glass” for reliability + security, it tends to earn durable budget share, expand with customer workloads, and cross-sell adjacent modules.
 

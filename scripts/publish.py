@@ -56,14 +56,44 @@ class Entry:
     body: str
 
 
+def sanitize_body(body: str) -> str:
+    body = body.strip()
+    # Remove repeated bold disclaimer lines to avoid clutter.
+    lines = body.splitlines()
+    out = []
+    prev_disclaimer = False
+    for ln in lines:
+        if ln.strip() == "**Not financial advice.**":
+            if prev_disclaimer:
+                continue
+            prev_disclaimer = True
+            out.append(ln)
+        else:
+            prev_disclaimer = False
+            out.append(ln)
+    body = "\n".join(out).strip()
+
+    # Demote headings inside entries to keep company pages readable.
+    # (Company pages already have their own title.)
+    demoted = []
+    for ln in body.splitlines():
+        m = re.match(r"^(#{1,6})\s+(.*)$", ln)
+        if m:
+            level = len(m.group(1))
+            new_level = min(6, level + 3)
+            demoted.append(("#" * new_level) + " " + m.group(2))
+        else:
+            demoted.append(ln)
+    return "\n".join(demoted).strip()
+
+
 def entry_block(e: Entry) -> str:
+    body = sanitize_body(e.body)
     return (
         f"\n\n---\n\n"
         f"### {e.title}\n"
-        f"*Kind:* {e.kind}  \\ \n"
-        f"*Updated:* {e.updated}\n\n"
-        f"{e.body.strip()}\n\n"
-        f"**Not financial advice.**\n"
+        f"<span class=\"small\">{e.kind} · {e.updated}</span>\n\n"
+        f"{body}\n"
     )
 
 

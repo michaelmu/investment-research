@@ -11,11 +11,11 @@ updated: 2026-02-16
 
 ---
 
-### Public-safety OS + SaaS flywheel
+###### Public-safety OS + SaaS flywheel
 *Kind:* deep-dive  \ 
 *Updated:* 2026-02-16
 
-# AXON (Axon Enterprise) — public-safety OS + SaaS flywheel
+#### AXON (Axon Enterprise) — public-safety OS + SaaS flywheel
 
 **Thesis (compounder frame):** Axon looks like a classic “mission + platform + switching costs” compounder: it sells must-have frontline hardware (body cams, in-car systems, TASER devices) that feeds a growing, higher-margin software and services layer (digital evidence cloud + productivity/real-time ops). The product suite is designed to be sold as integrated subscriptions, which can deepen retention as agencies standardize workflows around Evidence.com and adjacent modules.
 
