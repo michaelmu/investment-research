@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Hubbell: grid + datacenter electrification as an AI second-order winner
+title: "Hubbell: grid + datacenter electrification as an AI second-order winner"
 ticker: HUBB
 kind: ai-beneficiary
 published_at: 2026-02-17T16:06:18.046548Z

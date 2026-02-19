@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Copart: ML-driven total-loss + salvage auction flywheel
+title: "Copart: ML-driven total-loss + salvage auction flywheel"
 ticker: CPRT
 kind: ai-beneficiary
 published_at: 2026-02-16T16:06:49.757833Z

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Vertiv: power & cooling pickaxe for AI data centers
+title: "Vertiv: power & cooling pickaxe for AI data centers"
 ticker: VRT
 kind: ai-beneficiary
 published_at: 2026-02-18T16:06:08.838376Z

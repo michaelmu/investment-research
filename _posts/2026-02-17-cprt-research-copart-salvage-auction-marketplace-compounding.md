@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Copart: salvage-auction marketplace compounding
+title: "Copart: salvage-auction marketplace compounding"
 ticker: CPRT
 kind: deep-dive
 published_at: 2026-02-17T15:15:48.897233Z

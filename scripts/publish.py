@@ -166,10 +166,11 @@ def main() -> None:
         slug = slugify(f"{ticker}-{args.post_tag}-{args.title}")
         fname = f"{updated}-{slug}.md"
         post_path = posts / fname
+        safe_title = args.title.replace('"', '\\"')
         post_path.write_text(
             "---\n"
             f"layout: post\n"
-            f"title: " + args.title.replace('"', '\\"') + "\n"
+            f"title: \"{safe_title}\"\n"
             f"ticker: {ticker}\n"
             f"kind: {args.kind}\n"
             f"published_at: {now_iso()}\n"

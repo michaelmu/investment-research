@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Datadog: observability + security platform compounding
+title: "Datadog: observability + security platform compounding"
 ticker: DDOG
 kind: deep-dive
 published_at: 2026-02-18T15:16:01.895059Z
