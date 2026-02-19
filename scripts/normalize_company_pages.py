@@ -31,15 +31,31 @@ def split_frontmatter(md: str) -> tuple[str, str]:
     return fm, body
 
 
-def demote_heading(line: str) -> str:
+def normalize_heading(line: str) -> str:
+    """Keep entry titles readable while preventing giant nested headings.
+
+    Policy:
+    - Keep H3 (###) as-is (used for per-entry titles)
+    - Demote H1/H2 by +3 (so they become H4/H5)
+    - Keep H4+ as-is
+    - If a previous normalization produced H6 entry titles, upgrade H6->H3
+    """
     m = re.match(r"^(#{1,6})\s+(.*)$", line)
     if not m:
         return line
-    hashes, rest = m.group(1), m.group(2)
-    level = len(hashes)
-    # Demote by +3, cap at 6.
-    new_level = min(6, level + 3)
-    return ("#" * new_level) + " " + rest + "\n"
+    level = len(m.group(1))
+    rest = m.group(2)
+
+    # Upgrade mistakenly-demoted entry titles
+    if level == 6:
+        return "### " + rest + "\n"
+
+    if level == 3:
+        return line
+    if level in (1, 2):
+        new_level = min(6, level + 3)
+        return ("#" * new_level) + " " + rest + "\n"
+    return line
 
 
 def normalize_company(md: str) -> str:
@@ -83,9 +99,9 @@ def normalize_company(md: str) -> str:
             continue
         prev_disclaimer = False
 
-        # Demote headings to avoid nested huge headings
+        # Normalize headings to avoid nested huge headings
         if ln.lstrip().startswith("#"):
-            out.append(demote_heading(ln))
+            out.append(normalize_heading(ln))
         else:
             out.append(ln)
 

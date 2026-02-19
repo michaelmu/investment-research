@@ -11,7 +11,7 @@ updated: 2026-02-19
 
 ---
 
-###### AI capex becomes concrete
+### AI capex becomes concrete
 *Kind:* ai-beneficiary  \ 
 *Updated:* 2026-02-19
 

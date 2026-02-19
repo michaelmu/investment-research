@@ -11,7 +11,7 @@ updated: 2026-02-16
 
 ---
 
-###### Public-safety OS + SaaS flywheel
+### Public-safety OS + SaaS flywheel
 *Kind:* deep-dive  \ 
 *Updated:* 2026-02-16
 

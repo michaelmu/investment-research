@@ -13,7 +13,7 @@ updated: 2026-02-19
 
 ---
 
-###### Land-and-expand observability compounder
+### Land-and-expand observability compounder
 *Kind:* deep-dive  \ 
 *Updated:* 2026-02-19
 
@@ -38,7 +38,7 @@ updated: 2026-02-19
 **Not financial advice.**
 ---
 
-###### Datadog: observability + security platform compounding
+### Datadog: observability + security platform compounding
 *Kind:* deep-dive  \ 
 *Updated:* 2026-02-18
 

@@ -11,7 +11,7 @@ updated: 2026-02-18
 
 ---
 
-###### Vertiv: power & cooling pickaxe for AI data centers
+### Vertiv: power & cooling pickaxe for AI data centers
 *Kind:* ai-beneficiary  \ 
 *Updated:* 2026-02-18
 
