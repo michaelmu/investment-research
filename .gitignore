@@ -2,3 +2,10 @@ _site/
 .jekyll-cache/
 .bundle/
 .DS_Store
+
+# python
+__pycache__/
+*.pyc
+
+# paper trading caches
+paper/cache/
