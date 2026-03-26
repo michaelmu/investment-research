@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "updatedAt": "2026-03-26",
+  "benchmark": "SPY",
+  "baseCurrency": "USD",
+  "startingCapital": 100000,
+  "execution": {
+    "tradePrice": "next_open",
+    "commissionUsd": 0,
+    "slippageBps": 10,
+    "dividends": "cash",
+    "parking": "cash",
+    "corporateActions": "best_effort"
+  },
+  "constraints": {
+    "universe": ["US equities", "US ETFs"],
+    "noLeverage": true,
+    "noShort": true,
+    "avoidChinaExposure": true,
+    "avoidOTC": true,
+    "avoidBiotechBinary": true,
+    "minMarketCapUsd": 1000000000,
+    "minDollarVolumeUsd": 5000000
+  },
+  "portfolio": {
+    "maxPositions": 12,
+    "targetPositions": 10,
+    "maxPositionPct": 0.12,
+    "starterPositionPct": 0.04,
+    "cashFloorPct": 0.05
+  },
+  "strategies": [
+    {
+      "id": "QC",
+      "name": "Quality Compounders",
+      "description": "High-ROIC-ish, sticky workflow businesses; thesis-driven, valuation-aware."
+    },
+    {
+      "id": "AI23",
+      "name": "AI Picks-and-Shovels",
+      "description": "2nd/3rd-order AI beneficiaries (power, cooling, electrical, grid, contractors, data plumbing)."
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+timestamp_et,action,ticker,qty,price,fees,slippage_bps,notional,strategy_id,reason_code,note,source_doc
+2026-03-26T15:32:44,CASH,USD,100000.0,,0,,100000.0,,init,init 100k,
