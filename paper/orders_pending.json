@@ -1,0 +1,71 @@
+{
+  "created_asof": "2026-03-27",
+  "exec_date": "2026-03-30",
+  "orders": [
+    {
+      "note": "target_rebalance asof=2026-03-27",
+      "qty": 16.462,
+      "strategy_id": "QC",
+      "ticker": "IWM"
+    },
+    {
+      "note": "target_rebalance asof=2026-03-27",
+      "qty": 6.186,
+      "strategy_id": "QC",
+      "ticker": "SPY"
+    },
+    {
+      "note": "target_rebalance asof=2026-03-27",
+      "qty": 63.928,
+      "strategy_id": "AI23",
+      "ticker": "XLE"
+    },
+    {
+      "note": "target_rebalance asof=2026-03-27",
+      "qty": 87.71,
+      "strategy_id": "AI23",
+      "ticker": "XLU"
+    }
+  ],
+  "targets": {
+    "asof": "2026-03-27",
+    "sleeves": {
+      "AI23": {
+        "sleeve_weight": 0.5,
+        "targets": {
+          "cash": 0.0,
+          "picks": [
+            {
+              "mom": 0.41643764912550774,
+              "ticker": "XLE",
+              "weight": 0.5
+            },
+            {
+              "mom": 0.1750534642240602,
+              "ticker": "XLU",
+              "weight": 0.5
+            }
+          ]
+        }
+      },
+      "QC": {
+        "sleeve_weight": 0.5,
+        "targets": {
+          "cash": 0.0,
+          "picks": [
+            {
+              "mom": 0.06945116852251232,
+              "ticker": "IWM",
+              "weight": 0.5
+            },
+            {
+              "mom": 0.060579965455985985,
+              "ticker": "SPY",
+              "weight": 0.5
+            }
+          ]
+        }
+      }
+    }
+  }
+}
