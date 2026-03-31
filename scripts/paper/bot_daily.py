@@ -56,12 +56,12 @@ def last_bar_on_or_before(ticker: str, d: date):
     return last
 
 
-def open_on(ticker: str, d: date):
+def close_on(ticker: str, d: date):
     p = fetch_daily_csv(ticker)
     bars = load_bars(Path(p))
     for b in bars:
         if b.d == d:
-            return b.open
+            return b.close
     return None
 
 
@@ -127,7 +127,7 @@ def append_ledger(row: dict) -> None:
 
 
 def execute_pending_if_possible(asof: date, slippage_bps: float) -> tuple[list[str], int, int]:
-    """Try to execute pending orders scheduled for `asof` at that day's open.
+    """Try to execute pending orders scheduled for `asof` at that day's close.
 
     Returns: (msgs, filled_count, remaining_count)
 
@@ -157,9 +157,9 @@ def execute_pending_if_possible(asof: date, slippage_bps: float) -> tuple[list[s
         qty = float(o["qty"])
         if qty == 0:
             continue
-        px = open_on(ticker, asof)
+        px = close_on(ticker, asof)
         if px is None:
-            msgs.append(f"WARN: no open price for {ticker} on {asof}; keeping pending")
+            msgs.append(f"WARN: no close price for {ticker} on {asof}; keeping pending")
             remaining.append(o)
             continue
 
@@ -187,12 +187,12 @@ def execute_pending_if_possible(asof: date, slippage_bps: float) -> tuple[list[s
 
     if remaining:
         pending["orders"] = remaining
-        # keep same exec_date; the fill-checker will retry later when data appears
+        # keep same exec_date; retry later when close prints
         write_pending(pending)
         msgs.append(f"Executed {filled} order(s); {len(remaining)} still pending.")
     else:
         PENDING.unlink(missing_ok=True)
-        msgs.append(f"Executed {filled} pending order(s) for {asof} (filled at open).")
+        msgs.append(f"Executed {filled} pending order(s) for {asof} (filled at close).")
 
     return msgs, filled, len(remaining)
 
@@ -328,7 +328,7 @@ def main() -> None:
         "--mode",
         choices=["close", "fills"],
         default="close",
-        help="close: after-close full run (fills if possible + mark close + maybe rebalance). fills: only try to record open fills for pending orders.",
+        help="close: after-close full run (fills if possible + mark close + maybe rebalance). fills: only try to record close fills for pending orders.",
     )
     args = ap.parse_args()
 
@@ -338,7 +338,7 @@ def main() -> None:
 
     msgs: list[str] = []
 
-    # 1) Execute pending orders scheduled for today (fills at today's open)
+    # 1) Execute pending orders scheduled for today (fills at today's close)
     fill_msgs, filled, remaining = execute_pending_if_possible(asof, slippage_bps=slip)
     msgs += fill_msgs
 

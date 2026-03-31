@@ -1,11 +1,11 @@
 {
-  "version": 1,
-  "updatedAt": "2026-03-26",
+  "version": 2,
+  "updatedAt": "2026-03-31",
   "benchmark": "SPY",
   "baseCurrency": "USD",
   "startingCapital": 100000,
   "execution": {
-    "tradePrice": "next_open",
+    "tradePrice": "close",
     "commissionUsd": 0,
     "slippageBps": 10,
     "dividends": "cash",
