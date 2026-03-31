@@ -1,27 +1,27 @@
 {
   "created_asof": "2026-03-27",
-  "exec_date": "2026-03-30",
+  "exec_date": "2026-03-31",
   "orders": [
     {
-      "note": "target_rebalance asof=2026-03-27",
+      "note": "target_rebalance asof=2026-03-27 (requeued after missing Stooq open)",
       "qty": 16.462,
       "strategy_id": "QC",
       "ticker": "IWM"
     },
     {
-      "note": "target_rebalance asof=2026-03-27",
+      "note": "target_rebalance asof=2026-03-27 (requeued after missing Stooq open)",
       "qty": 6.186,
       "strategy_id": "QC",
       "ticker": "SPY"
     },
     {
-      "note": "target_rebalance asof=2026-03-27",
+      "note": "target_rebalance asof=2026-03-27 (requeued after missing Stooq open)",
       "qty": 63.928,
       "strategy_id": "AI23",
       "ticker": "XLE"
     },
     {
-      "note": "target_rebalance asof=2026-03-27",
+      "note": "target_rebalance asof=2026-03-27 (requeued after missing Stooq open)",
       "qty": 87.71,
       "strategy_id": "AI23",
       "ticker": "XLU"

@@ -126,24 +126,32 @@ def append_ledger(row: dict) -> None:
         w.writerow(row)
 
 
-def execute_pending_if_possible(asof: date, slippage_bps: float) -> list[str]:
-    msgs = []
+def execute_pending_if_possible(asof: date, slippage_bps: float) -> tuple[list[str], int, int]:
+    """Try to execute pending orders scheduled for `asof` at that day's open.
+
+    Returns: (msgs, filled_count, remaining_count)
+
+    IMPORTANT: if price data is missing for any order, we keep the order pending.
+    """
+    msgs: list[str] = []
     pending = load_pending()
     if not pending:
-        return msgs
+        return msgs, 0, 0
 
     exec_date = parse_date(pending["exec_date"])
     if exec_date != asof:
-        return msgs
+        return msgs, 0, 0
 
     orders = pending.get("orders", [])
     if not orders:
         PENDING.unlink(missing_ok=True)
-        return msgs
+        return msgs, 0, 0
 
     ts = datetime.now().isoformat(timespec="seconds")
 
     filled = 0
+    remaining: list[dict] = []
+
     for o in orders:
         ticker = o["ticker"].upper()
         qty = float(o["qty"])
@@ -151,7 +159,8 @@ def execute_pending_if_possible(asof: date, slippage_bps: float) -> list[str]:
             continue
         px = open_on(ticker, asof)
         if px is None:
-            msgs.append(f"WARN: no open price for {ticker} on {asof}; skipping")
+            msgs.append(f"WARN: no open price for {ticker} on {asof}; keeping pending")
+            remaining.append(o)
             continue
 
         action = "BUY" if qty > 0 else "SELL"
@@ -176,9 +185,16 @@ def execute_pending_if_possible(asof: date, slippage_bps: float) -> list[str]:
         )
         filled += 1
 
-    PENDING.unlink(missing_ok=True)
-    msgs.append(f"Executed {filled} pending order(s) for {asof} (filled at open).")
-    return msgs
+    if remaining:
+        pending["orders"] = remaining
+        # keep same exec_date; the fill-checker will retry later when data appears
+        write_pending(pending)
+        msgs.append(f"Executed {filled} order(s); {len(remaining)} still pending.")
+    else:
+        PENDING.unlink(missing_ok=True)
+        msgs.append(f"Executed {filled} pending order(s) for {asof} (filled at open).")
+
+    return msgs, filled, len(remaining)
 
 
 def build_targets(asof: date, rules: dict) -> dict:
@@ -307,20 +323,31 @@ def main() -> None:
     import argparse
 
     ap = argparse.ArgumentParser()
-    ap.add_argument("--asof", default=date.today().isoformat(), help="YYYY-MM-DD (after close)")
+    ap.add_argument("--asof", default=date.today().isoformat(), help="YYYY-MM-DD")
+    ap.add_argument(
+        "--mode",
+        choices=["close", "fills"],
+        default="close",
+        help="close: after-close full run (fills if possible + mark close + maybe rebalance). fills: only try to record open fills for pending orders.",
+    )
     args = ap.parse_args()
 
     asof = parse_date(args.asof)
     rules = load_rules()
     slip = float(rules["execution"].get("slippageBps", 10))
 
-    msgs = []
+    msgs: list[str] = []
 
     # 1) Execute pending orders scheduled for today (fills at today's open)
-    msgs += execute_pending_if_possible(asof, slippage_bps=slip)
+    fill_msgs, filled, remaining = execute_pending_if_possible(asof, slippage_bps=slip)
+    msgs += fill_msgs
 
-    # 2) Mark-to-market (close) by calling run_mark.sh-equivalent
-    # We rely on mark.py writing positions/nav/cash.
+    if args.mode == "fills":
+        # In fills mode we do NOT mark close or generate new orders.
+        print("\n".join(msgs) if msgs else "No pending fills due today.")
+        return
+
+    # 2) Mark-to-market (close). Note: Stooq daily bars typically appear after close.
     from subprocess import check_call
 
     env = dict(**__import__("os").environ)
@@ -343,7 +370,6 @@ def main() -> None:
     else:
         msgs.append("No rebalance today (weekly rebalance runs Fridays).")
 
-    # Print a compact summary (cron will send this)
     print("\n".join(msgs))
 
 
