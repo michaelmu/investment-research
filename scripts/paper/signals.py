@@ -23,7 +23,10 @@ class Momentum:
 
 
 def last_bar_on_or_before(ticker: str, d: date):
-    p = fetch_daily_csv(ticker)
+    try:
+        p = fetch_daily_csv(ticker, min_date=d)
+    except Exception:
+        return None
     bars = load_bars(Path(p))
     last = None
     for b in bars:
@@ -46,7 +49,8 @@ def momentum_close_to_close(ticker: str, asof: date, lookback_days: int = 252) -
     start_date = asof - timedelta(days=int(lookback_days * 1.6))
 
     # Find first bar >= start_date, then use its close as start.
-    p = fetch_daily_csv(ticker)
+    # Ensure cache is fresh up through `asof`.
+    p = fetch_daily_csv(ticker, min_date=asof)
     bars = load_bars(Path(p))
     start = None
     for b in bars:

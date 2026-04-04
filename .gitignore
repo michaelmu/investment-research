@@ -9,3 +9,6 @@ __pycache__/
 
 # paper trading caches
 paper/cache/
+
+# local python venv
+.venv/

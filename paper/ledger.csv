@@ -1,2 +1,6 @@
 timestamp_et,action,ticker,qty,price,fees,slippage_bps,notional,strategy_id,reason_code,note,source_doc
 2026-03-26T15:32:44,CASH,USD,100000.0,,0,,100000.0,,init,init 100k,
+2026-04-04T11:15:15,BUY,IWM,16.462000,248.0000,0,10.00,4082.58,QC,rebalance,target_rebalance asof=2026-03-27 (requeued after missing Stooq open),
+2026-04-04T11:15:15,BUY,SPY,6.186000,650.3400,0,10.00,4023.00,QC,rebalance,target_rebalance asof=2026-03-27 (requeued after missing Stooq open),
+2026-04-04T11:15:15,BUY,XLE,63.928000,61.2600,0,10.00,3916.23,AI23,rebalance,target_rebalance asof=2026-03-27 (requeued after missing Stooq open),
+2026-04-04T11:15:15,BUY,XLU,87.710000,45.8900,0,10.00,4025.01,AI23,rebalance,target_rebalance asof=2026-03-27 (requeued after missing Stooq open),

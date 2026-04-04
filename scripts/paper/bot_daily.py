@@ -45,7 +45,10 @@ def is_friday(d: date) -> bool:
 
 
 def last_bar_on_or_before(ticker: str, d: date):
-    p = fetch_daily_csv(ticker)
+    try:
+        p = fetch_daily_csv(ticker, min_date=d)
+    except Exception:
+        return None
     bars = load_bars(Path(p))
     last = None
     for b in bars:
@@ -57,7 +60,10 @@ def last_bar_on_or_before(ticker: str, d: date):
 
 
 def close_on(ticker: str, d: date):
-    p = fetch_daily_csv(ticker)
+    try:
+        p = fetch_daily_csv(ticker, min_date=d)
+    except Exception:
+        return None
     bars = load_bars(Path(p))
     for b in bars:
         if b.d == d:
@@ -98,7 +104,14 @@ def write_pending(obj: dict) -> None:
 def load_pending() -> dict | None:
     if not PENDING.exists():
         return None
-    return json.loads(PENDING.read_text(encoding="utf-8"))
+    try:
+        return json.loads(PENDING.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        # Preserve the bad file for inspection, but get it out of the way so the bot can run.
+        ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+        bad = PAPER / f"orders_pending.badjson.{ts}.json"
+        bad.write_text(PENDING.read_text(encoding="utf-8"), encoding="utf-8")
+        raise RuntimeError(f"orders_pending.json is invalid JSON; copied to {bad}: {e}")
 
 
 def append_ledger(row: dict) -> None:

@@ -11,4 +11,9 @@ fi
 # Ensure local imports work
 export PYTHONPATH="$(pwd)/scripts/paper"
 
-./scripts/paper/mark.py "${DATE_FLAG[@]}"
+PY="./.venv/bin/python"
+if [[ ! -x "$PY" ]]; then
+  PY="python3"
+fi
+
+"$PY" ./scripts/paper/mark.py "${DATE_FLAG[@]}"
