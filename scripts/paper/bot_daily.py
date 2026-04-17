@@ -145,6 +145,7 @@ def execute_pending_if_possible(asof: date, slippage_bps: float) -> tuple[list[s
     Returns: (msgs, filled_count, remaining_count)
 
     IMPORTANT: if price data is missing for any order, we keep the order pending.
+    Past-due orders are retried on later dates until they fill.
     """
     msgs: list[str] = []
     pending = load_pending()
@@ -152,8 +153,11 @@ def execute_pending_if_possible(asof: date, slippage_bps: float) -> tuple[list[s
         return msgs, 0, 0
 
     exec_date = parse_date(pending["exec_date"])
-    if exec_date != asof:
+    if exec_date > asof:
         return msgs, 0, 0
+    if exec_date < asof:
+        age = (asof - exec_date).days
+        msgs.append(f"ALERT: pending orders are past due by {age} day(s) (exec_date={exec_date}); retrying at {asof} close.")
 
     orders = pending.get("orders", [])
     if not orders:
@@ -379,7 +383,7 @@ def main() -> None:
             exec_date += timedelta(days=1)
 
         write_pending({"created_asof": asof.isoformat(), "exec_date": exec_date.isoformat(), "targets": targets, "orders": orders})
-        msgs.append(f"Created {len(orders)} order(s) for execution at {exec_date} open (recorded after close when data available).")
+        msgs.append(f"Created {len(orders)} order(s) for execution at {exec_date} close.")
     else:
         msgs.append("No rebalance today (weekly rebalance runs Fridays).")
 
