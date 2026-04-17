@@ -71,6 +71,21 @@ def close_on(ticker: str, d: date):
     return None
 
 
+def last_bar_between(ticker: str, start_d: date, end_d: date):
+    try:
+        p = fetch_daily_csv(ticker, min_date=end_d)
+    except Exception:
+        return None
+    bars = load_bars(Path(p))
+    last = None
+    for b in bars:
+        if start_d <= b.d <= end_d:
+            last = b
+        elif b.d > end_d:
+            break
+    return last
+
+
 def load_rules() -> dict:
     return json.loads(RULES.read_text(encoding="utf-8"))
 
@@ -174,11 +189,23 @@ def execute_pending_if_possible(asof: date, slippage_bps: float) -> tuple[list[s
         qty = float(o["qty"])
         if qty == 0:
             continue
-        px = close_on(ticker, asof)
-        if px is None:
-            msgs.append(f"WARN: no close price for {ticker} on {asof}; keeping pending")
-            remaining.append(o)
-            continue
+
+        bar = last_bar_between(ticker, exec_date, asof)
+        stale_fill = False
+        if bar is None:
+            bar = last_bar_on_or_before(ticker, asof)
+            if bar is None:
+                msgs.append(f"WARN: no close price for {ticker} on or before {asof}; keeping pending")
+                remaining.append(o)
+                continue
+            stale_fill = True
+
+        px = bar.close
+        fill_date = bar.d
+        if stale_fill:
+            msgs.append(f"ALERT: stale fill for {ticker}: using last available close before exec window ({fill_date} @ {px:.4f})")
+        elif fill_date < asof:
+            msgs.append(f"INFO: using latest available close for {ticker}: {fill_date} @ {px:.4f}")
 
         action = "BUY" if qty > 0 else "SELL"
         qabs = abs(qty)
@@ -196,7 +223,7 @@ def execute_pending_if_possible(asof: date, slippage_bps: float) -> tuple[list[s
                 "notional": f"{notional:.2f}",
                 "strategy_id": o.get("strategy_id", ""),
                 "reason_code": "rebalance",
-                "note": o.get("note", ""),
+                "note": f"{o.get('note', '')}; fill_date={fill_date}; stale_fill={stale_fill}",
                 "source_doc": "",
             }
         )
