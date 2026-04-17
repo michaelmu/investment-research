@@ -5,8 +5,8 @@
   "baseCurrency": "USD",
   "startingCapital": 100000,
   "marketData": {
-    "provider": "yahoo",
-    "fallbackProvider": "stooq"
+    "provider": "tiingo",
+    "fallbackProvider": "yahoo"
   },
   "execution": {
     "tradePrice": "close",
