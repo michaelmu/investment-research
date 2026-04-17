@@ -28,6 +28,13 @@ permalink: /paper/daily-review/2026-04-17/
 - Change: Tighten execution to require provider freshness on trading days or defer fills instead of using stale fallback when lag exceeds threshold.
 - Metric: stale_fallback share of fills < 10% over rolling 2 weeks
 - Risk: More deferred orders / lower responsiveness.
+- Severity / confidence: 9 / 8
+- Auto-executable: True
+
+### Daily decision
+- Executed: False
+- Reason: already at desired setting
+- Changes: none
 
 ### Daily discipline
-- Do not auto-change rules here. Queue evidence and escalate through weekly IC unless urgent bug/data issue.
+- Daily self-review may auto-execute only high-severity, high-confidence operational fixes. Strategy preference changes still defer to the weekly IC loop.

@@ -142,7 +142,7 @@ def append_ledger(row: dict) -> None:
         w.writerow(row)
 
 
-def execute_pending_if_possible(asof: date, slippage_bps: float, provider: str, fallback_provider: str | None) -> tuple[list[str], int, int]:
+def execute_pending_if_possible(asof: date, slippage_bps: float, provider: str, fallback_provider: str | None, max_stale_lag_days: int | None = None) -> tuple[list[str], int, int]:
     """Try to execute pending orders scheduled for `asof` at that day's close.
 
     Returns: (msgs, filled_count, remaining_count)
@@ -187,6 +187,13 @@ def execute_pending_if_possible(asof: date, slippage_bps: float, provider: str, 
                 remaining.append(o)
                 continue
             stale_fill = True
+
+        fill_date = bar.d
+        lag_days = (asof - fill_date).days
+        if max_stale_lag_days is not None and stale_fill and lag_days > max_stale_lag_days:
+            msgs.append(f"ALERT: stale fill for {ticker} rejected; lag {lag_days}d exceeds maxStaleLagDays={max_stale_lag_days}. Keeping pending.")
+            remaining.append(o)
+            continue
 
         px = bar.close
         fill_date = bar.d
@@ -399,12 +406,13 @@ def main() -> None:
     asof = parse_date(args.asof)
     rules = load_rules()
     slip = float(rules["execution"].get("slippageBps", 10))
+    max_stale_lag_days = rules.get("execution", {}).get("maxStaleLagDays")
     provider, fallback_provider = provider_from_rules(rules)
 
     msgs: list[str] = []
 
     # 1) Execute pending orders scheduled for today (fills at today's close)
-    fill_msgs, filled, remaining = execute_pending_if_possible(asof, slippage_bps=slip, provider=provider, fallback_provider=fallback_provider)
+    fill_msgs, filled, remaining = execute_pending_if_possible(asof, slippage_bps=slip, provider=provider, fallback_provider=fallback_provider, max_stale_lag_days=max_stale_lag_days)
     msgs += fill_msgs
 
     if args.mode == "fills":

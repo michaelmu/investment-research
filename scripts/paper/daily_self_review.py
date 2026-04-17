@@ -5,7 +5,7 @@ Goal: improve returns without thrashing the rules.
 - Reviews recent performance + analytics + data quality
 - Writes a daily memo under paper/notes/
 - Proposes at most one concrete improvement candidate
-- Does NOT auto-change rules
+- Can auto-execute high-severity operational fixes
 """
 
 from __future__ import annotations
@@ -21,6 +21,8 @@ PERF = Path("paper/performance_summary.json")
 ANALYTICS = Path("paper/analytics_summary.json")
 LEDGER = Path("paper/ledger.csv")
 BACKLOG = Path("paper/improvements/backlog.md")
+RULES = Path("paper/rules.json")
+CHANGELOG = Path("paper/improvements/CHANGELOG.md")
 OUT_DIR = Path("paper/notes")
 
 
@@ -32,6 +34,10 @@ def load_json(path: Path) -> dict:
     if not path.exists():
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def save_json(path: Path, obj: dict) -> None:
+    path.write_text(json.dumps(obj, indent=2), encoding="utf-8")
 
 
 def load_csv(path: Path) -> list[dict]:
@@ -88,6 +94,10 @@ def propose_improvement(perf: dict, analytics: dict, fill_stats: dict) -> dict:
             "change": "Tighten execution to require provider freshness on trading days or defer fills instead of using stale fallback when lag exceeds threshold.",
             "metric": "stale_fallback share of fills < 10% over rolling 2 weeks",
             "risk": "More deferred orders / lower responsiveness.",
+            "severity": 9,
+            "confidence": 8,
+            "autoExecutable": True,
+            "actionKey": "tighten_stale_fill_lag",
         }
 
     if rel is not None and rel < -5 and turnover is not None and turnover < 60:
@@ -97,6 +107,10 @@ def propose_improvement(perf: dict, analytics: dict, fill_stats: dict) -> dict:
             "change": "Raise composite-score threshold and require stronger trend confirmation before new positions.",
             "metric": "relative return improves over next 2-4 weeks without turnover spike > 25%",
             "risk": "May reduce exposure too much and miss rebounds.",
+            "severity": 6,
+            "confidence": 5,
+            "autoExecutable": False,
+            "actionKey": "increase_selectivity",
         }
 
     if hit_rate is not None and hit_rate >= 70 and rel is not None and rel < 0:
@@ -106,6 +120,10 @@ def propose_improvement(perf: dict, analytics: dict, fill_stats: dict) -> dict:
             "change": "Test slightly larger starter positions or faster scaling for high-score names.",
             "metric": "portfolio return improves without drawdown worsening materially",
             "risk": "Bigger sizing magnifies signal errors.",
+            "severity": 5,
+            "confidence": 4,
+            "autoExecutable": False,
+            "actionKey": "improve_winner_sizing",
         }
 
     return {
@@ -114,7 +132,47 @@ def propose_improvement(perf: dict, analytics: dict, fill_stats: dict) -> dict:
         "change": "Carry current rules forward and revisit in weekly IC review.",
         "metric": "n/a",
         "risk": "Slow response to genuine regime change.",
+        "severity": 1,
+        "confidence": 1,
+        "autoExecutable": False,
+        "actionKey": "none",
     }
+
+
+def maybe_execute(proposal: dict, asof: date) -> dict:
+    decision = {"executed": False, "reason": "not eligible", "changes": []}
+    if not proposal.get("autoExecutable"):
+        decision["reason"] = "proposal not auto-executable"
+        return decision
+    if proposal.get("severity", 0) < 8 or proposal.get("confidence", 0) < 7:
+        decision["reason"] = "severity/confidence below auto-execute threshold"
+        return decision
+
+    rules = load_json(RULES)
+    changed = False
+    if proposal.get("actionKey") == "tighten_stale_fill_lag":
+        execution = rules.setdefault("execution", {})
+        current = execution.get("maxStaleLagDays")
+        target = 1
+        if current != target:
+            execution["maxStaleLagDays"] = target
+            rules["version"] = int(rules.get("version", 0)) + 1
+            rules["updatedAt"] = asof.isoformat()
+            save_json(RULES, rules)
+            changed = True
+            decision["changes"].append("execution.maxStaleLagDays=1")
+            with CHANGELOG.open("a", encoding="utf-8") as f:
+                f.write(
+                    f"\n- **{asof.isoformat()} (daily self-review auto-execution)** — Tighten stale-fill policy.\n"
+                    f"  - Hypothesis: stale fallback fills are degrading execution quality and contaminating the learning loop.\n"
+                    f"  - Change: `execution.maxStaleLagDays` = `1`.\n"
+                    f"  - Metric: stale_fallback share of fills < 10% over rolling 2 weeks.\n"
+                    f"  - Risk: more deferred orders / lower responsiveness.\n"
+                    f"  - Evaluation date: **{(asof + timedelta(days=7)).isoformat()}**.\n"
+                )
+    decision["executed"] = changed
+    decision["reason"] = "applied" if changed else "already at desired setting"
+    return decision
 
 
 def main() -> None:
@@ -137,6 +195,7 @@ def main() -> None:
 
     fill_stats = recent_fill_stats(ledger_rows, asof)
     proposal = propose_improvement(perf, analytics, fill_stats)
+    decision = maybe_execute(proposal, asof)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"daily-self-review-{asof.isoformat()}.md"
@@ -166,9 +225,15 @@ def main() -> None:
         f"- Hypothesis: {proposal['hypothesis']}\n"
         f"- Change: {proposal['change']}\n"
         f"- Metric: {proposal['metric']}\n"
-        f"- Risk: {proposal['risk']}\n\n"
+        f"- Risk: {proposal['risk']}\n"
+        f"- Severity / confidence: {proposal.get('severity')} / {proposal.get('confidence')}\n"
+        f"- Auto-executable: {proposal.get('autoExecutable')}\n\n"
+        "### Daily decision\n"
+        f"- Executed: {decision['executed']}\n"
+        f"- Reason: {decision['reason']}\n"
+        f"- Changes: {', '.join(decision['changes']) if decision['changes'] else 'none'}\n\n"
         "### Daily discipline\n"
-        "- Do not auto-change rules here. Queue evidence and escalate through weekly IC unless urgent bug/data issue.\n"
+        "- Daily self-review may auto-execute only high-severity, high-confidence operational fixes. Strategy preference changes still defer to the weekly IC loop.\n"
     )
     out.write_text(content, encoding="utf-8")
 
@@ -187,6 +252,8 @@ def main() -> None:
     print("ok: true")
     print(f"file: {out}")
     print(f"proposal: {proposal['title']}")
+    print(f"executed: {decision['executed']}")
+    print(f"decision_reason: {decision['reason']}")
 
 
 if __name__ == "__main__":

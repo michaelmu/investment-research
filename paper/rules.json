@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "updatedAt": "2026-03-31",
+  "version": 3,
+  "updatedAt": "2026-04-17",
   "benchmark": "SPY",
   "baseCurrency": "USD",
   "startingCapital": 100000,
@@ -32,6 +32,7 @@
     "tradePrice": "close",
     "commissionUsd": 0,
     "slippageBps": 10,
+    "maxStaleLagDays": 1,
     "dividends": "cash",
     "parking": "cash",
     "corporateActions": "best_effort"
