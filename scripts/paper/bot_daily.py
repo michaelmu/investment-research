@@ -190,9 +190,13 @@ def execute_pending_if_possible(asof: date, slippage_bps: float, provider: str, 
 
         px = bar.close
         fill_date = bar.d
+        fill_source = getattr(bar, "provider", provider) or provider
+        fill_quality = "exact"
         if stale_fill:
+            fill_quality = "stale_fallback"
             msgs.append(f"ALERT: stale fill for {ticker}: using last available close before exec window ({fill_date} @ {px:.4f})")
         elif fill_date < asof:
+            fill_quality = "latest_available"
             msgs.append(f"INFO: using latest available close for {ticker}: {fill_date} @ {px:.4f}")
 
         action = "BUY" if qty > 0 else "SELL"
@@ -211,6 +215,9 @@ def execute_pending_if_possible(asof: date, slippage_bps: float, provider: str, 
                 "notional": f"{notional:.2f}",
                 "strategy_id": o.get("strategy_id", ""),
                 "reason_code": "rebalance",
+                "fill_source": fill_source,
+                "fill_quality": fill_quality,
+                "price_date_used": str(fill_date),
                 "note": f"{o.get('note', '')}; fill_date={fill_date}; stale_fill={stale_fill}",
                 "source_doc": "",
             }

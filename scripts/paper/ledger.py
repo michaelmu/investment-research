@@ -32,6 +32,9 @@ FIELDS = [
     "notional",
     "strategy_id",
     "reason_code",
+    "fill_source",
+    "fill_quality",
+    "price_date_used",
     "note",
     "source_doc",
 ]
@@ -107,6 +110,9 @@ def main() -> None:
                     "notional": args.cash,
                     "strategy_id": "",
                     "reason_code": "init",
+                    "fill_source": "",
+                    "fill_quality": "",
+                    "price_date_used": "",
                     "note": args.note,
                     "source_doc": "",
                 }
@@ -130,6 +136,9 @@ def main() -> None:
                     "notional": notional,
                     "strategy_id": args.strategy_id,
                     "reason_code": args.reason_code,
+                    "fill_source": "manual",
+                    "fill_quality": "manual",
+                    "price_date_used": "",
                     "note": args.note,
                     "source_doc": args.source_doc,
                 }
@@ -152,6 +161,9 @@ def main() -> None:
                     "notional": args.amount,
                     "strategy_id": "",
                     "reason_code": "dividend",
+                    "fill_source": "",
+                    "fill_quality": "",
+                    "price_date_used": "",
                     "note": args.note,
                     "source_doc": "",
                 }
@@ -174,6 +186,9 @@ def main() -> None:
                     "notional": "",
                     "strategy_id": "",
                     "reason_code": "split",
+                    "fill_source": "",
+                    "fill_quality": "",
+                    "price_date_used": "",
                     "note": args.note,
                     "source_doc": "",
                 }
