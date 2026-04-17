@@ -34,18 +34,17 @@ class SignalSnapshot:
     composite: float | None
 
 
+def _bars_on_or_before(ticker: str, d: date):
+    bars, _ = get_bars(ticker, min_date=d)
+    return [b for b in bars if b.d <= d]
+
+
 def last_bar_on_or_before(ticker: str, d: date):
     try:
-        bars, _ = get_bars(ticker, min_date=d)
+        bars = _bars_on_or_before(ticker, d)
     except Exception:
         return None
-    last = None
-    for b in bars:
-        if b.d <= d:
-            last = b
-        else:
-            break
-    return last
+    return bars[-1] if bars else None
 
 
 def close_on_or_before(ticker: str, d: date):
@@ -82,19 +81,28 @@ def sma_on_or_before(ticker: str, asof: date, window: int = 200) -> float | None
 
 
 def signal_snapshot(ticker: str, asof: date) -> SignalSnapshot | None:
-    close = close_on_or_before(ticker, asof)
-    if close is None:
+    try:
+        bars = _bars_on_or_before(ticker, asof)
+    except Exception:
         return None
-    sma_200 = sma_on_or_before(ticker, asof, 200)
-    m1 = momentum_close_to_close(ticker, asof, 21)
-    m3 = momentum_close_to_close(ticker, asof, 63)
-    m6 = momentum_close_to_close(ticker, asof, 126)
-    m12 = momentum_close_to_close(ticker, asof, 252)
-    vals = [m1.return_pct if m1 else None, m3.return_pct if m3 else None, m6.return_pct if m6 else None, m12.return_pct if m12 else None]
+    if not bars:
+        return None
+
+    close = bars[-1].close
+    closes = [b.close for b in bars]
+
+    def mom(window: int) -> float | None:
+        if len(closes) < window + 1:
+            return None
+        start = closes[-(window + 1)]
+        end = closes[-1]
+        return (end / start - 1.0) if start else None
+
+    sma_200 = (sum(closes[-200:]) / 200.0) if len(closes) >= 200 else None
+    vals = [mom(21), mom(63), mom(126), mom(252)]
     comp_parts = [v for v in vals if v is not None]
     composite = None
     if comp_parts:
-        # weighted toward 6m/12m; enough variation to test later
         w = []
         for v, wt in zip(vals, [0.1, 0.2, 0.3, 0.4]):
             if v is not None:
@@ -106,10 +114,10 @@ def signal_snapshot(ticker: str, asof: date) -> SignalSnapshot | None:
         ticker=ticker,
         close=float(close),
         sma_200=float(sma_200) if sma_200 is not None else None,
-        mom_1m=m1.return_pct if m1 else None,
-        mom_3m=m3.return_pct if m3 else None,
-        mom_6m=m6.return_pct if m6 else None,
-        mom_12m=m12.return_pct if m12 else None,
+        mom_1m=vals[0],
+        mom_3m=vals[1],
+        mom_6m=vals[2],
+        mom_12m=vals[3],
         trend_ok=trend_ok,
         composite=composite,
     )
