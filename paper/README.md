@@ -11,6 +11,9 @@ This folder contains the public, auditable paper-trading system.
 - `cash.csv` — daily cash balance (generated)
 - `position_pnl.csv` — realized/unrealized P&L by position
 - `performance_summary.json` — summarized performance metrics
+- `analytics_summary.json` — turnover / trade stats / sleeve summary
+- `sleeve_pnl.csv` — sleeve-level traded notional and realized P&L
+- `exposure_history.csv` — rough sleeve exposure snapshots over time
 - `notes/` — weekly review memos
 - `tiingo_api_key.txt` — optional local API key file for Tiingo (gitignored)
 
@@ -37,5 +40,7 @@ Tiingo auth lookup order:
    - `./scripts/paper/provider_health.py --asof YYYY-MM-DD`
 5) Performance cleanup / P&L:
    - `./scripts/paper/performance.py`
+6) Portfolio analytics:
+   - `./scripts/paper/analytics.py`
 
 All output is **not financial advice**.

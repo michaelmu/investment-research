@@ -1,0 +1,27 @@
+{
+  "turnover": {
+    "grossTradedNotional": 48238.270000000004,
+    "averageNav": 100095.38714285714,
+    "turnoverPct": 48.19230074124581
+  },
+  "tradeStats": {
+    "closedTrades": 2,
+    "hitRatePct": 100.0,
+    "avgWin": 28.630589539999846,
+    "avgLoss": null
+  },
+  "sleeves": [
+    {
+      "strategy_id": "AI23",
+      "buy_notional": "20150.77",
+      "sell_notional": "4064.48",
+      "realized_pnl": "31.38"
+    },
+    {
+      "strategy_id": "QC",
+      "buy_notional": "19966.07",
+      "sell_notional": "4056.96",
+      "realized_pnl": "25.88"
+    }
+  ]
+}
