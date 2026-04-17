@@ -173,44 +173,38 @@ def write_csv(path: Path, rows: list[dict]) -> None:
 
 
 def compute_exposure_history(rows: list[dict], nav_rows: list[dict]) -> list[dict]:
-    trades_by_date = defaultdict(list)
-    for r in rows:
-        ts = r.get("timestamp_et") or ""
-        if not ts:
-            continue
-        d = ts.split("T", 1)[0]
-        trades_by_date[d].append(r)
+    trades = [r for r in rows if (r.get("action") or "").upper() in ("BUY", "SELL") and (r.get("timestamp_et") or "")]
+    trades.sort(key=lambda r: r.get("timestamp_et") or "")
 
     qty_by_ticker = defaultdict(float)
     sid_by_ticker = {}
+    last_price = {}
     exposures = []
+    i = 0
 
     for nav in nav_rows:
         d = nav["date"]
-        for r in trades_by_date.get(d, []):
+        # Apply all trades up through this nav date.
+        while i < len(trades) and (trades[i].get("timestamp_et") or "").split("T", 1)[0] <= d:
+            r = trades[i]
             action = (r.get("action") or "").upper()
             ticker = (r.get("ticker") or "").upper()
             sid = (r.get("strategy_id") or sid_by_ticker.get(ticker) or "UNASSIGNED")
             q = float(r.get("qty") or 0)
+            px = float(r.get("price") or 0)
             if action == "BUY":
                 qty_by_ticker[ticker] += q
                 sid_by_ticker[ticker] = sid
             elif action == "SELL":
                 qty_by_ticker[ticker] -= q
+                if sid:
+                    sid_by_ticker[ticker] = sid
+            if ticker:
+                last_price[ticker] = px
+            i += 1
 
         nav_value = float(nav.get("nav") or 0)
         sleeve_mv = defaultdict(float)
-        for r in trades_by_date.get(d, []):
-            pass
-        # Approximate exposure using last trade prices from ledger for open positions.
-        last_price = {}
-        for r in rows:
-            ticker = (r.get("ticker") or "").upper()
-            if ticker:
-                try:
-                    last_price[ticker] = float(r.get("price") or 0)
-                except Exception:
-                    pass
         for ticker, qty in qty_by_ticker.items():
             if abs(qty) <= 1e-9:
                 continue
