@@ -4,6 +4,7 @@
 Current providers:
 - yahoo: default, daily OHLCV via yfinance (repo-local .venv)
 - stooq: legacy CSV endpoint (may block automated access)
+- tiingo: daily EOD bars via API key
 
 The rest of the bot should import this module instead of talking directly to a
 specific provider. That keeps it easy to swap in Tiingo/Polygon later.
@@ -13,6 +14,7 @@ from __future__ import annotations
 
 import csv
 import math
+import os
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
@@ -40,6 +42,7 @@ class Bar:
 DEFAULT_CACHE_DIR = Path("paper/cache/prices")
 DEFAULT_PROVIDER = "yahoo"
 FALLBACK_PROVIDER = "stooq"
+TIINGO_KEY_FILE = Path("paper/tiingo_api_key.txt")
 
 
 def _cache_path(ticker: str, provider: str, cache_dir: Path = DEFAULT_CACHE_DIR) -> Path:
@@ -136,6 +139,38 @@ def _fetch_stooq_csv(ticker: str, out: Path) -> Path:
     return out
 
 
+def _tiingo_key() -> str:
+    key = (os.environ.get("TIINGO_API_KEY") or "").strip()
+    if key:
+        return key
+    if TIINGO_KEY_FILE.exists():
+        return TIINGO_KEY_FILE.read_text(encoding="utf-8").strip()
+    raise RuntimeError("Tiingo API key not found. Set TIINGO_API_KEY or create paper/tiingo_api_key.txt")
+
+
+def _fetch_tiingo_csv(ticker: str, out: Path) -> Path:
+    key = _tiingo_key()
+    url = f"https://api.tiingo.com/tiingo/daily/{ticker.upper()}/prices"
+    params = {"startDate": "1900-01-01", "resampleFreq": "daily", "token": key}
+    r = requests.get(url, params=params, headers={"Content-Type": "application/json"}, timeout=30)
+    r.raise_for_status()
+    data = r.json()
+    if not isinstance(data, list) or not data:
+        raise RuntimeError(f"No Tiingo data for {ticker}")
+    lines = ["Date,Open,High,Low,Close,Volume"]
+    for row in data:
+        d = str(row.get("date", "")).split("T", 1)[0]
+        if not d:
+            continue
+        o = float(row.get("open") or 0.0)
+        h = float(row.get("high") or 0.0)
+        l = float(row.get("low") or 0.0)
+        c = float(row.get("close") or 0.0)
+        v = int(float(row.get("volume") or 0))
+        lines.append(f"{d},{o:.4f},{h:.4f},{l:.4f},{c:.4f},{v}")
+    return _write_csv(out, lines)
+
+
 def fetch_daily_csv(
     ticker: str,
     provider: str = DEFAULT_PROVIDER,
@@ -159,6 +194,8 @@ def fetch_daily_csv(
             return _fetch_yahoo_csv(ticker, out), provider
         if provider == "stooq":
             return _fetch_stooq_csv(ticker, out), provider
+        if provider == "tiingo":
+            return _fetch_tiingo_csv(ticker, out), provider
         raise RuntimeError(f"Unsupported provider: {provider}")
     except Exception:
         if fallback_provider and fallback_provider.lower() != provider:
@@ -169,6 +206,8 @@ def fetch_daily_csv(
                     return _fetch_yahoo_csv(ticker, fb_out), fb
                 if fb == "stooq":
                     return _fetch_stooq_csv(ticker, fb_out), fb
+                if fb == "tiingo":
+                    return _fetch_tiingo_csv(ticker, fb_out), fb
             except Exception:
                 pass
 

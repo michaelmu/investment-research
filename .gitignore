@@ -12,3 +12,6 @@ paper/cache/
 
 # local python venv
 .venv/
+
+# local API keys
+paper/tiingo_api_key.txt

@@ -9,6 +9,19 @@ This folder contains the public, auditable paper-trading system.
 - `nav.csv` — daily NAV vs benchmark (generated)
 - `cash.csv` — daily cash balance (generated)
 - `notes/` — weekly review memos
+- `tiingo_api_key.txt` — optional local API key file for Tiingo (gitignored)
+
+## Market data providers
+Configured in `rules.json` under `marketData`.
+
+Current supported providers:
+- `yahoo`
+- `stooq`
+- `tiingo`
+
+Tiingo auth lookup order:
+1. `TIINGO_API_KEY` environment variable
+2. `paper/tiingo_api_key.txt`
 
 ## Workflow
 1) Record events (append-only):

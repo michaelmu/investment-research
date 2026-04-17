@@ -1,0 +1,3 @@
+# Copy this file to paper/tiingo_api_key.txt and paste your Tiingo API key on the first line.
+# This example file is safe to commit; the real tiingo_api_key.txt is gitignored.
+YOUR_TIINGO_API_KEY_HERE
