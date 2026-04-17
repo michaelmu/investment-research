@@ -30,5 +30,7 @@ Tiingo auth lookup order:
    - `./scripts/paper/mark.py --date YYYY-MM-DD`
 3) Weekly review:
    - `./scripts/paper/weekly.py --week-ending YYYY-MM-DD`
+4) Provider health check:
+   - `./scripts/paper/provider_health.py --asof YYYY-MM-DD`
 
 All output is **not financial advice**.
