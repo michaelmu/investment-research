@@ -11,7 +11,7 @@ import csv
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-NAV = Path("paper/nav.csv")
+NAV = Path("paper/nav_clean.csv")
 OUT_DIR = Path("paper/notes")
 
 

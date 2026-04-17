@@ -6,8 +6,11 @@ This folder contains the public, auditable paper-trading system.
 - `rules.json` — current strategy + risk rules
 - `ledger.csv` — append-only event ledger (trades, dividends, splits, fees)
 - `positions.csv` — latest position snapshot (generated)
-- `nav.csv` — daily NAV vs benchmark (generated)
+- `nav.csv` — raw daily NAV vs benchmark log (generated)
+- `nav_clean.csv` — de-duplicated NAV series used for reporting
 - `cash.csv` — daily cash balance (generated)
+- `position_pnl.csv` — realized/unrealized P&L by position
+- `performance_summary.json` — summarized performance metrics
 - `notes/` — weekly review memos
 - `tiingo_api_key.txt` — optional local API key file for Tiingo (gitignored)
 
@@ -32,5 +35,7 @@ Tiingo auth lookup order:
    - `./scripts/paper/weekly.py --week-ending YYYY-MM-DD`
 4) Provider health check:
    - `./scripts/paper/provider_health.py --asof YYYY-MM-DD`
+5) Performance cleanup / P&L:
+   - `./scripts/paper/performance.py`
 
 All output is **not financial advice**.
