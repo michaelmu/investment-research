@@ -21,6 +21,7 @@ NAV_CLEAN = Path("paper/nav_clean.csv")
 OUT_SUMMARY = Path("paper/analytics_summary.json")
 OUT_SLEEVE = Path("paper/sleeve_pnl.csv")
 OUT_EXPOSURE = Path("paper/exposure_history.csv")
+SLEEVE_NAV = Path("paper/sleeve_nav.csv")
 
 
 def load_csv(path: Path) -> list[dict]:
@@ -173,45 +174,21 @@ def write_csv(path: Path, rows: list[dict]) -> None:
 
 
 def compute_exposure_history(rows: list[dict], nav_rows: list[dict]) -> list[dict]:
-    trades = [r for r in rows if (r.get("action") or "").upper() in ("BUY", "SELL") and (r.get("timestamp_et") or "")]
-    trades.sort(key=lambda r: r.get("timestamp_et") or "")
+    sleeve_rows = load_csv(SLEEVE_NAV)
+    by_date = defaultdict(list)
+    for r in sleeve_rows:
+        by_date[r.get("date") or ""].append(r)
 
-    qty_by_ticker = defaultdict(float)
-    sid_by_ticker = {}
-    last_price = {}
     exposures = []
-    i = 0
-
     for nav in nav_rows:
         d = nav["date"]
-        # Apply all trades up through this nav date.
-        while i < len(trades) and (trades[i].get("timestamp_et") or "").split("T", 1)[0] <= d:
-            r = trades[i]
-            action = (r.get("action") or "").upper()
-            ticker = (r.get("ticker") or "").upper()
-            sid = (r.get("strategy_id") or sid_by_ticker.get(ticker) or "UNASSIGNED")
-            q = float(r.get("qty") or 0)
-            px = float(r.get("price") or 0)
-            if action == "BUY":
-                qty_by_ticker[ticker] += q
-                sid_by_ticker[ticker] = sid
-            elif action == "SELL":
-                qty_by_ticker[ticker] -= q
-                if sid:
-                    sid_by_ticker[ticker] = sid
-            if ticker:
-                last_price[ticker] = px
-            i += 1
-
         nav_value = float(nav.get("nav") or 0)
-        sleeve_mv = defaultdict(float)
-        for ticker, qty in qty_by_ticker.items():
-            if abs(qty) <= 1e-9:
-                continue
-            sid = sid_by_ticker.get(ticker) or "UNASSIGNED"
-            sleeve_mv[sid] += qty * float(last_price.get(ticker) or 0)
         row = {"date": d, "nav": f"{nav_value:.2f}"}
-        for sid, mv in sorted(sleeve_mv.items()):
+        for sr in by_date.get(d, []):
+            sid = (sr.get("sleeve") or "").strip() or "UNASSIGNED"
+            if sid == "CASH":
+                continue
+            mv = float(sr.get("market_value") or 0)
             row[f"{sid}_mv"] = f"{mv:.2f}"
             row[f"{sid}_pct"] = f"{(mv / nav_value * 100.0):.2f}" if nav_value else ""
         exposures.append(row)
@@ -233,6 +210,23 @@ def main() -> None:
     write_csv(OUT_SLEEVE, sleeve)
     write_csv(OUT_EXPOSURE, exposure)
 
+    latest_sleeve_nav = {}
+    sleeve_rows = load_csv(SLEEVE_NAV)
+    if sleeve_rows:
+        latest_date = max(r.get("date") or "" for r in sleeve_rows)
+        portfolio_nav = None
+        if nav:
+            portfolio_nav = float(nav[-1].get("nav") or 0)
+        for r in sleeve_rows:
+            if r.get("date") == latest_date:
+                mv = float(r.get("market_value") or 0)
+                latest_sleeve_nav[r.get("sleeve") or "UNASSIGNED"] = {
+                    "cash": float(r.get("cash") or 0),
+                    "marketValue": mv,
+                    "nav": float(r.get("nav") or 0),
+                    "exposurePct": (mv / portfolio_nav * 100.0) if portfolio_nav else None,
+                }
+
     summary = {
         "turnover": turnover,
         "tradeStats": {
@@ -242,6 +236,7 @@ def main() -> None:
             "avgLoss": rt["avgLoss"],
         },
         "sleeves": sleeve,
+        "latestSleeveNav": latest_sleeve_nav,
     }
     OUT_SUMMARY.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 

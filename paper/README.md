@@ -13,7 +13,8 @@ This folder contains the public, auditable paper-trading system.
 - `performance_summary.json` — summarized performance metrics
 - `analytics_summary.json` — turnover / trade stats / sleeve summary
 - `sleeve_pnl.csv` — sleeve-level traded notional and realized P&L
-- `exposure_history.csv` — rough sleeve exposure snapshots over time
+- `sleeve_nav.csv` — direct daily sleeve cash / market value / NAV
+- `exposure_history.csv` — sleeve exposure snapshots over time from direct sleeve NAV
 - `notes/` — weekly review memos
 - `tiingo_api_key.txt` — optional local API key file for Tiingo (gitignored)
 

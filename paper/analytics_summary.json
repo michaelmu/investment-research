@@ -23,5 +23,25 @@
       "sell_notional": "4056.96",
       "realized_pnl": "25.88"
     }
-  ]
+  ],
+  "latestSleeveNav": {
+    "AI23": {
+      "cash": -8161.32,
+      "marketValue": 8455.57,
+      "nav": 294.25,
+      "exposurePct": 8.327639962137646
+    },
+    "CASH": {
+      "cash": 100000.0,
+      "marketValue": 0.0,
+      "nav": 100000.0,
+      "exposurePct": 0.0
+    },
+    "QC": {
+      "cash": -7819.44,
+      "marketValue": 8657.48,
+      "nav": 838.04,
+      "exposurePct": 8.526495129176084
+    }
+  }
 }
