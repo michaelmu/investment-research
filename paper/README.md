@@ -43,5 +43,7 @@ Tiingo auth lookup order:
    - `./scripts/paper/performance.py`
 6) Portfolio analytics:
    - `./scripts/paper/analytics.py`
+7) Daily self review:
+   - `./scripts/paper/daily_self_review.py --asof YYYY-MM-DD`
 
 All output is **not financial advice**.

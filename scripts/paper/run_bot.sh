@@ -20,3 +20,11 @@ if ! "$PY" ./scripts/paper/provider_health.py --asof "$ASOF"; then
 fi
 
 "$PY" ./scripts/paper/bot_daily.py --asof "$ASOF" --mode "$MODE"
+
+# Lightweight daily self-review after the main run. This should surface one
+# concrete improvement candidate without changing rules automatically.
+if [[ "$MODE" == "close" ]]; then
+  "$PY" ./scripts/paper/performance.py >/dev/null 2>&1 || true
+  "$PY" ./scripts/paper/analytics.py >/dev/null 2>&1 || true
+  "$PY" ./scripts/paper/daily_self_review.py --asof "$ASOF" >/dev/null 2>&1 || true
+fi
