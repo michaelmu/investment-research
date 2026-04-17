@@ -10,7 +10,7 @@ Outputs (overwritten each run):
 - paper/cash.csv (append)
 - paper/nav.csv (append)
 
-Prices: Stooq unadjusted daily close.
+Prices: configured market data provider daily close.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
-from stooq import last_close_on_or_before
+from market_data import last_close_on_or_before
 
 LEDGER = Path("paper/ledger.csv")
 RULES = Path("paper/rules.json")
@@ -49,6 +49,11 @@ def ensure_csv(path: Path, header: list[str]) -> None:
 
 def read_rules() -> dict:
     return json.loads(RULES.read_text(encoding="utf-8"))
+
+
+def provider_from_rules(rules: dict) -> tuple[str, str | None]:
+    md = rules.get("marketData", {})
+    return md.get("provider", "yahoo"), md.get("fallbackProvider", "stooq")
 
 
 def read_ledger() -> list[dict]:
@@ -109,12 +114,12 @@ def compute_positions(rows: list[dict]) -> tuple[dict[str, float], float]:
     return qty2, cash
 
 
-def write_positions(d: date, positions: dict[str, float]) -> None:
+def write_positions(d: date, positions: dict[str, float], provider: str, fallback_provider: str | None) -> None:
     with OUT_POS.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["asof", "ticker", "qty", "close", "market_value"])
         for t, q in sorted(positions.items()):
-            px = last_close_on_or_before(t, d)
+            px = last_close_on_or_before(t, d, provider=provider, fallback_provider=fallback_provider)
             mv = (px or 0.0) * q
             w.writerow([d.isoformat(), t, f"{q:.6f}", f"{px:.4f}" if px else "", f"{mv:.2f}"])
 
@@ -142,21 +147,22 @@ def main() -> None:
     d = parse_date(args.date)
     rules = read_rules()
     bench = rules.get("benchmark", "SPY")
+    provider, fallback_provider = provider_from_rules(rules)
 
     rows = read_ledger()
     positions, cash = compute_positions(rows)
 
-    write_positions(d, positions)
+    write_positions(d, positions, provider, fallback_provider)
     append_cash(d, cash)
 
     nav = cash
     for t, q in positions.items():
-        px = last_close_on_or_before(t, d)
+        px = last_close_on_or_before(t, d, provider=provider, fallback_provider=fallback_provider)
         if px is None:
             continue
         nav += px * q
 
-    bpx = last_close_on_or_before(bench, d)
+    bpx = last_close_on_or_before(bench, d, provider=provider, fallback_provider=fallback_provider)
     append_nav(d, nav, bpx or 0.0, bench)
 
     print("ok: true")

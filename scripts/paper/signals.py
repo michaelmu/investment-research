@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """Signal helpers (price-only).
 
-We deliberately keep this price-only so it can run daily with Stooq.
+We deliberately keep this price-only so it can run daily with the configured
+market data provider.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, timedelta
-from pathlib import Path
-
-from stooq import fetch_daily_csv, load_bars
+from market_data import get_bars
 
 
 @dataclass
@@ -24,10 +23,9 @@ class Momentum:
 
 def last_bar_on_or_before(ticker: str, d: date):
     try:
-        p = fetch_daily_csv(ticker, min_date=d)
+        bars, _ = get_bars(ticker, min_date=d)
     except Exception:
         return None
-    bars = load_bars(Path(p))
     last = None
     for b in bars:
         if b.d <= d:
@@ -49,9 +47,7 @@ def momentum_close_to_close(ticker: str, asof: date, lookback_days: int = 252) -
     start_date = asof - timedelta(days=int(lookback_days * 1.6))
 
     # Find first bar >= start_date, then use its close as start.
-    # Ensure cache is fresh up through `asof`.
-    p = fetch_daily_csv(ticker, min_date=asof)
-    bars = load_bars(Path(p))
+    bars, _ = get_bars(ticker, min_date=asof)
     start = None
     for b in bars:
         if b.d >= start_date:

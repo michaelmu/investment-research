@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from stooq import fetch_daily_csv, load_bars
+from market_data import get_bars, last_bar_on_or_before as md_last_bar_on_or_before
 from signals import momentum_close_to_close
 
 ROOT = Path(".")
@@ -44,39 +44,22 @@ def is_friday(d: date) -> bool:
     return d.weekday() == 4
 
 
-def last_bar_on_or_before(ticker: str, d: date):
-    try:
-        p = fetch_daily_csv(ticker, min_date=d)
-    except Exception:
-        return None
-    bars = load_bars(Path(p))
-    last = None
-    for b in bars:
-        if b.d <= d:
-            last = b
-        else:
-            break
-    return last
+def last_bar_on_or_before(ticker: str, d: date, provider: str = "yahoo", fallback_provider: str | None = "stooq"):
+    return md_last_bar_on_or_before(ticker, d, provider=provider, fallback_provider=fallback_provider)
 
 
-def close_on(ticker: str, d: date):
-    try:
-        p = fetch_daily_csv(ticker, min_date=d)
-    except Exception:
-        return None
-    bars = load_bars(Path(p))
-    for b in bars:
-        if b.d == d:
-            return b.close
+def close_on(ticker: str, d: date, provider: str = "yahoo", fallback_provider: str | None = "stooq"):
+    b = last_bar_on_or_before(ticker, d, provider=provider, fallback_provider=fallback_provider)
+    if b and b.d == d:
+        return b.close
     return None
 
 
-def last_bar_between(ticker: str, start_d: date, end_d: date):
+def last_bar_between(ticker: str, start_d: date, end_d: date, provider: str = "yahoo", fallback_provider: str | None = "stooq"):
     try:
-        p = fetch_daily_csv(ticker, min_date=end_d)
+        bars, _ = get_bars(ticker, min_date=end_d, provider=provider, fallback_provider=fallback_provider)
     except Exception:
         return None
-    bars = load_bars(Path(p))
     last = None
     for b in bars:
         if start_d <= b.d <= end_d:
@@ -88,6 +71,11 @@ def last_bar_between(ticker: str, start_d: date, end_d: date):
 
 def load_rules() -> dict:
     return json.loads(RULES.read_text(encoding="utf-8"))
+
+
+def provider_from_rules(rules: dict) -> tuple[str, str | None]:
+    md = rules.get("marketData", {})
+    return md.get("provider", "yahoo"), md.get("fallbackProvider", "stooq")
 
 
 def read_ledger() -> list[dict]:
@@ -103,10 +91,10 @@ def compute_positions_and_cash(rows: list[dict]) -> tuple[dict[str, float], floa
     return compute_positions(rows)
 
 
-def portfolio_value(positions: dict[str, float], cash: float, d: date) -> float:
+def portfolio_value(positions: dict[str, float], cash: float, d: date, provider: str, fallback_provider: str | None) -> float:
     nav = cash
     for t, q in positions.items():
-        b = last_bar_on_or_before(t, d)
+        b = last_bar_on_or_before(t, d, provider=provider, fallback_provider=fallback_provider)
         if b:
             nav += b.close * q
     return float(nav)
@@ -154,7 +142,7 @@ def append_ledger(row: dict) -> None:
         w.writerow(row)
 
 
-def execute_pending_if_possible(asof: date, slippage_bps: float) -> tuple[list[str], int, int]:
+def execute_pending_if_possible(asof: date, slippage_bps: float, provider: str, fallback_provider: str | None) -> tuple[list[str], int, int]:
     """Try to execute pending orders scheduled for `asof` at that day's close.
 
     Returns: (msgs, filled_count, remaining_count)
@@ -190,10 +178,10 @@ def execute_pending_if_possible(asof: date, slippage_bps: float) -> tuple[list[s
         if qty == 0:
             continue
 
-        bar = last_bar_between(ticker, exec_date, asof)
+        bar = last_bar_between(ticker, exec_date, asof, provider=provider, fallback_provider=fallback_provider)
         stale_fill = False
         if bar is None:
-            bar = last_bar_on_or_before(ticker, asof)
+            bar = last_bar_on_or_before(ticker, asof, provider=provider, fallback_provider=fallback_provider)
             if bar is None:
                 msgs.append(f"WARN: no close price for {ticker} on or before {asof}; keeping pending")
                 remaining.append(o)
@@ -284,14 +272,15 @@ def build_targets(asof: date, rules: dict) -> dict:
 
 
 def compute_rebalance_orders(asof: date, rules: dict, targets: dict) -> list[dict]:
+    provider, fallback_provider = provider_from_rules(rules)
     rows = read_ledger()
     positions, cash = compute_positions_and_cash(rows)
-    nav = portfolio_value(positions, cash, asof)
+    nav = portfolio_value(positions, cash, asof, provider, fallback_provider)
 
     # Current market values by ticker
     mv = {}
     for t, q in positions.items():
-        b = last_bar_on_or_before(t, asof)
+        b = last_bar_on_or_before(t, asof, provider=provider, fallback_provider=fallback_provider)
         mv[t] = (b.close * q) if b else 0.0
 
     desired_mv = defaultdict_float()
@@ -309,7 +298,7 @@ def compute_rebalance_orders(asof: date, rules: dict, targets: dict) -> list[dic
     starter_pct = float(rules["portfolio"]["starterPositionPct"])
 
     for t, target_val in desired_mv.items():
-        b = last_bar_on_or_before(t, asof)
+        b = last_bar_on_or_before(t, asof, provider=provider, fallback_provider=fallback_provider)
         if not b or b.close <= 0:
             continue
         # cap per-position
@@ -379,11 +368,12 @@ def main() -> None:
     asof = parse_date(args.asof)
     rules = load_rules()
     slip = float(rules["execution"].get("slippageBps", 10))
+    provider, fallback_provider = provider_from_rules(rules)
 
     msgs: list[str] = []
 
     # 1) Execute pending orders scheduled for today (fills at today's close)
-    fill_msgs, filled, remaining = execute_pending_if_possible(asof, slippage_bps=slip)
+    fill_msgs, filled, remaining = execute_pending_if_possible(asof, slippage_bps=slip, provider=provider, fallback_provider=fallback_provider)
     msgs += fill_msgs
 
     if args.mode == "fills":

@@ -4,6 +4,10 @@
   "benchmark": "SPY",
   "baseCurrency": "USD",
   "startingCapital": 100000,
+  "marketData": {
+    "provider": "yahoo",
+    "fallbackProvider": "stooq"
+  },
   "execution": {
     "tradePrice": "close",
     "commissionUsd": 0,
