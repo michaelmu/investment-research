@@ -27,7 +27,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from market_data import get_bars, last_bar_on_or_before as md_last_bar_on_or_before
-from signals import momentum_close_to_close
+from signals import signal_snapshot
 
 ROOT = Path(".")
 PAPER = Path("paper")
@@ -237,42 +237,66 @@ def execute_pending_if_possible(asof: date, slippage_bps: float, provider: str, 
 
 
 def build_targets(asof: date, rules: dict) -> dict:
-    # Two sleeves with distinct ETF universes.
-    sleeve_weights = {"QC": 0.5, "AI23": 0.5}
+    engine = rules.get("strategyEngine", {})
+    sleeves_cfg = engine.get("sleeves", {})
+    top_n = int(engine.get("selection", {}).get("topNPerSleeve", 2))
+    use_trend = bool(engine.get("selection", {}).get("useTrendFilter", True))
+    abs_gate = bool(engine.get("selection", {}).get("absoluteMomentumGate", True))
 
-    universes = {
-        "QC": ["SPY", "QQQ", "DIA", "IWM", "IEF", "TLT", "SHY"],
-        "AI23": ["XLK", "XLI", "XLV", "XLE", "XLF", "XLU", "XLP", "XLY"],
-    }
-
-    # Compute 12m momentum and pick top 2 per sleeve if positive.
-    lookback = 252
     targets: dict[str, dict] = {}
 
-    for sid, tickers in universes.items():
-        moms = []
+    for sid, cfg in sleeves_cfg.items():
+        tickers = cfg.get("universe", [])
+        risk_off = cfg.get("riskOff", [])
+        snaps = []
         for t in tickers:
-            m = momentum_close_to_close(t, asof, lookback_days=lookback)
-            if m:
-                moms.append(m)
-        moms.sort(key=lambda x: x.return_pct, reverse=True)
+            s = signal_snapshot(t, asof)
+            if s and s.composite is not None:
+                snaps.append(s)
 
-        picks = [m for m in moms[:2] if m.return_pct > 0]
+        ranked = sorted(snaps, key=lambda x: x.composite if x.composite is not None else -999, reverse=True)
+        eligible = []
+        for s in ranked:
+            if use_trend and not s.trend_ok:
+                continue
+            if abs_gate and (s.composite is None or s.composite <= 0):
+                continue
+            eligible.append(s)
+
+        picks = eligible[:top_n]
         if not picks:
-            targets[sid] = {"cash": 1.0, "picks": []}
+            ro_snaps = [signal_snapshot(t, asof) for t in risk_off]
+            ro_snaps = [s for s in ro_snaps if s and s.composite is not None]
+            ro_snaps.sort(key=lambda x: x.composite if x.composite is not None else -999, reverse=True)
+            if ro_snaps:
+                p = ro_snaps[0]
+                targets[sid] = {
+                    "cash": 0.0,
+                    "picks": [{"ticker": p.ticker, "weight": 1.0, "score": p.composite, "trend_ok": p.trend_ok}],
+                }
+            else:
+                targets[sid] = {"cash": 1.0, "picks": []}
             continue
 
         w_each = 1.0 / len(picks)
         targets[sid] = {
             "cash": 0.0,
-            "picks": [{"ticker": p.ticker, "weight": w_each, "mom": p.return_pct} for p in picks],
+            "picks": [
+                {
+                    "ticker": p.ticker,
+                    "weight": w_each,
+                    "score": p.composite,
+                    "trend_ok": p.trend_ok,
+                    "mom_12m": p.mom_12m,
+                }
+                for p in picks
+            ],
         }
 
-    # Scale to portfolio weights
     out = {"asof": asof.isoformat(), "sleeves": {}}
     for sid, t in targets.items():
         out["sleeves"][sid] = {
-            "sleeve_weight": sleeve_weights[sid],
+            "sleeve_weight": float(sleeves_cfg.get(sid, {}).get("weight", 0.5)),
             "targets": t,
         }
     return out

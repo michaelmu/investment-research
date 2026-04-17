@@ -8,6 +8,26 @@
     "provider": "tiingo",
     "fallbackProvider": "yahoo"
   },
+  "strategyEngine": {
+    "rebalance": "weekly_friday",
+    "selection": {
+      "topNPerSleeve": 2,
+      "useTrendFilter": true,
+      "absoluteMomentumGate": true
+    },
+    "sleeves": {
+      "QC": {
+        "weight": 0.5,
+        "universe": ["SPY", "QQQ", "DIA", "IWM", "IEF", "TLT", "SHY"],
+        "riskOff": ["SHY", "IEF"]
+      },
+      "AI23": {
+        "weight": 0.5,
+        "universe": ["XLK", "XLI", "XLV", "XLE", "XLF", "XLU", "XLP", "XLY"],
+        "riskOff": ["XLU", "XLP"]
+      }
+    }
+  },
   "execution": {
     "tradePrice": "close",
     "commissionUsd": 0,
