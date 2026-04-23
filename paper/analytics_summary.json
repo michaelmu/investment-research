@@ -1,8 +1,8 @@
 {
   "turnover": {
-    "grossTradedNotional": 48238.270000000004,
-    "averageNav": 100095.38714285714,
-    "turnoverPct": 48.19230074124581
+    "grossTradedNotional": 65575.51000000001,
+    "averageNav": 100867.11,
+    "turnoverPct": 65.01178629981568
   },
   "tradeStats": {
     "closedTrades": 2,
@@ -13,23 +13,23 @@
   "sleeves": [
     {
       "strategy_id": "AI23",
-      "buy_notional": "20150.77",
+      "buy_notional": "28857.70",
       "sell_notional": "4064.48",
       "realized_pnl": "31.38"
     },
     {
       "strategy_id": "QC",
-      "buy_notional": "19966.07",
-      "sell_notional": "4056.96",
-      "realized_pnl": "25.88"
+      "buy_notional": "27622.34",
+      "sell_notional": "5031.00",
+      "realized_pnl": "116.77"
     }
   ],
   "latestSleeveNav": {
     "AI23": {
-      "cash": -8161.32,
-      "marketValue": 8455.57,
-      "nav": 294.25,
-      "exposurePct": 8.327639962137646
+      "cash": -24826.15,
+      "marketValue": 25023.71,
+      "nav": 197.56,
+      "exposurePct": 24.50577553295587
     },
     "CASH": {
       "cash": 100000.0,
@@ -38,10 +38,10 @@
       "exposurePct": 0.0
     },
     "QC": {
-      "cash": -7819.44,
-      "marketValue": 8657.48,
-      "nav": 838.04,
-      "exposurePct": 8.526495129176084
+      "cash": -22623.99,
+      "marketValue": 24539.95,
+      "nav": 1915.96,
+      "exposurePct": 24.032028275981475
     }
   }
 }

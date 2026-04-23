@@ -10,3 +10,7 @@ timestamp_et,action,ticker,qty,price,fees,slippage_bps,notional,strategy_id,reas
 2026-04-17T05:15:35,BUY,XLK,30.790000,129.8900,0,10.00,3999.31,AI23,rebalance,legacy,stale_fallback,2026-03-27,target_rebalance asof=2026-04-10; fill_date=2026-03-27; stale_fill=True,
 2026-04-17T05:15:35,SELL,SPY,6.186000,655.8300,0,10.00,4056.96,QC,rebalance,legacy,stale_fallback,2026-04-02,exit_not_in_targets; fill_date=2026-04-02; stale_fill=True,
 2026-04-17T05:15:35,SELL,XLU,87.710000,46.3400,0,10.00,4064.48,AI23,rebalance,legacy,stale_fallback,2026-04-02,exit_not_in_targets; fill_date=2026-04-02; stale_fill=True,
+2026-04-22T20:46:54,SELL,IWM,3.523000,276.4800,0,10.00,974.04,QC,rebalance,tiingo,exact,2026-04-22,target_rebalance asof=2026-04-17; fill_date=2026-04-22; stale_fill=False,
+2026-04-22T20:46:54,BUY,QQQ,11.687000,655.1100,0,10.00,7656.27,QC,rebalance,tiingo,exact,2026-04-22,target_rebalance asof=2026-04-17; fill_date=2026-04-22; stale_fill=False,
+2026-04-22T20:46:54,BUY,XLE,19.161000,56.5400,0,10.00,1083.36,AI23,rebalance,tiingo,exact,2026-04-22,target_rebalance asof=2026-04-17; fill_date=2026-04-22; stale_fill=False,
+2026-04-22T20:46:54,BUY,XLK,48.223000,158.0900,0,10.00,7623.57,AI23,rebalance,tiingo,exact,2026-04-22,target_rebalance asof=2026-04-17; fill_date=2026-04-22; stale_fill=False,
