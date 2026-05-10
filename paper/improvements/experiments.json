@@ -1,4 +1,16 @@
 {
   "version": 1,
-  "experiments": []
+  "experiments": [
+    {
+      "id": "2026-05-10-winner-sizing",
+      "status": "proposed",
+      "createdAt": "2026-05-10",
+      "title": "Test modestly larger winner sizing",
+      "hypothesis": "If hit rate remains decent but relative returns lag SPY, modestly larger effective sizing in the highest-score names may improve returns without materially worsening drawdown.",
+      "proposedChange": "Test slightly larger starter positions or faster scaling for top-score names; do not change live rules until the test design is locked.",
+      "metric": "Improve 4-week relative return vs SPY while keeping max drawdown from worsening by more than 1 percentage point versus current baseline.",
+      "risk": "Larger sizing can amplify weak signals and raise concentration risk.",
+      "evaluationDate": "2026-06-07"
+    }
+  ]
 }
